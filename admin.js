@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 const $ = id => document.getElementById(id);
-const REPO = 'JacobGC22/email-builder';
+const REPO = 'Goodman-Campaigns/web-app';
 const BRANCH = 'main';
 let id = null;
 let cfg = null;
