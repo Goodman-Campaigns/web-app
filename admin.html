@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Client Settings</title>
+<style>
+  :root { --bg:#F5F7FA; --card:#FFFFFF; --ink:#1B2733; --muted:#5A6772; --line:#D9E0E8; --accent:#1C3764; --accent-ink:#FFFFFF; --bad:#B3261E; --ok:#1E7B45; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0F141A; --card:#171E26; --ink:#E8EDF1; --muted:#9AA7B3; --line:#2A3541; --accent:#84B1D8; --accent-ink:#0F141A; --bad:#FF8A80; --ok:#7FD39F; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 Arial,Helvetica,sans-serif; }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); background:var(--card); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  header a { color:var(--accent); font-weight:700; }
+  main { display:grid; grid-template-columns:minmax(340px,1fr) minmax(380px,1fr); gap:16px; padding:16px 20px 40px; align-items:start; }
+  @media (max-width:980px) { main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:14px; }
+  label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 4px; }
+  select, input[type=text], input[type=password], textarea { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); font:inherit; }
+  input[type=color] { width:44px; height:34px; padding:2px; border:1px solid var(--line); border-radius:6px; background:var(--card); }
+  textarea { font:12px/1.4 Consolas,Menlo,monospace; min-height:520px; resize:vertical; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .row > div { flex:1 1 180px; }
+  .pair { display:flex; gap:8px; margin-bottom:6px; }
+  .pair input:first-child { flex:0 0 38%; }
+  button { padding:8px 14px; border-radius:6px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); font:inherit; font-weight:700; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--accent); }
+  button.small { padding:4px 10px; font-size:13px; }
+  .bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+  #err { color:var(--bad); font-size:13px; min-height:18px; margin-top:6px; }
+  #status { font-size:13px; color:var(--muted); }
+  #status.ok, #tplStatus.ok { color:var(--ok); } #status.bad, #tplStatus.bad { color:var(--bad); }
+  .colors { display:flex; gap:16px; flex-wrap:wrap; }
+  .colors > div { display:flex; flex-direction:column; gap:4px; }
+  .rule { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .rule:last-child { border-bottom:0; }
+  .rule .t { flex:1; } .rule .t b { display:block; font-weight:400; }
+  .rule .t span { color:var(--muted); font-size:13px; }
+  .fixed { color:var(--muted); font-size:13px; }
+  .fixed div { padding:3px 0; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Client settings</h1>
+  <a href="index.html" id="back">Back to builder</a>
+  <div style="flex:1"></div>
+  <div style="width:260px"><select id="client"></select></div>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <div class="bar" style="margin-bottom:10px">
+        <button id="publish">Publish for everyone</button>
+        <button id="save" class="ghost">Test in builder</button>
+        <button id="download" class="ghost">Download</button>
+        <button id="reset" class="ghost">Reset</button>
+      </div>
+      <div id="status"></div>
+      <div id="tokenRow" class="hidden" style="margin-top:10px">
+        <label>GitHub token (kept in this browser)</label>
+        <input type="password" id="token" autocomplete="off" />
+      </div>
+      <div style="margin-top:8px"><a href="#" id="forget" class="hidden" style="color:var(--accent);font-size:13px">Forget saved token</a></div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div style="flex:2 1 260px"><label>Display name</label><input type="text" id="f_name" /></div>
+        <div><label>Platform</label>
+          <select id="f_platform"><option value="sb">Switchboard</option><option value="ngp">NGP / EveryAction</option><option value="mailchimp">Mailchimp</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:2 1 260px"><label>Default ActBlue page</label><input type="text" id="f_page" /></div>
+        <div><label>Name fallback word</label><input type="text" id="f_fallback" /></div>
+      </div>
+      <div class="row">
+        <div><label>Refcode</label>
+          <select id="f_refmode"><option value="append">Add to every ActBlue link</option><option value="strip">Remove from links</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Plain-text footer (added to the plain-text copy for Switchboard)</label>
+      <textarea id="f_plainfooter" style="min-height:150px" spellcheck="false"></textarea>
+    </div>
+
+    <div class="card">
+      <label>Rules used when "Fix with rules" is on</label>
+      <div id="rules"></div>
+      <div id="removedRules" class="hidden" style="margin-top:10px"><label>Removed</label><div id="removedList"></div></div>
+    </div>
+
+    <div class="card">
+      <label>Always on</label>
+      <div class="fixed">
+        <div>FIRSTNAME becomes the first-name merge tag with the fallback word</div>
+        <div>$ASK1 to $ASK4 become the ask-amount merge</div>
+        <div>[DONATE], [DONATE: label], LINK become a button</div>
+        <div>[EXPL] or [ABX] becomes the express stack</div>
+        <div>[BRACKETED LABEL] with a link, or in all caps, becomes a button</div>
+        <div>[HTML] ... [/HTML] passes your HTML through unchanged</div>
+        <div>[IMAGE: url] places an image</div>
+        <div>Text color is kept, except black, gray, white and link blue</div>
+        <div>Google link redirects are removed</div>
+        <div>Links with no address point at the default page</div>
+        <div>Merge and Jinja code is never edited, except curly quote marks inside it are made straight so it works</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Templates you can mark in a draft</label>
+      <div class="fixed" style="margin-bottom:10px">
+        <div>[CALLOUT] ... [/CALLOUT] makes the lines between a shaded box</div>
+        <div>[QUOTE] ... [/QUOTE] makes the lines between a large pull quote</div>
+        <div>[DIVIDER] adds a horizontal rule</div>
+      </div>
+      <label>Your own templates for this client</label>
+      <div id="snippets"></div>
+      <button class="ghost small" id="addSnippet" style="margin-top:6px">Add a template</button>
+    </div>
+
+    <div class="card">
+      <label>Placeholder swaps</label>
+      <div id="tokens"></div>
+      <button class="ghost small" id="addToken" style="margin-top:6px">Add a swap</button>
+    </div>
+
+    <div class="card">
+      <label>Always correct these misspellings</label>
+      <div id="typos"></div>
+      <button class="ghost small" id="addTypo" style="margin-top:6px">Add a misspelling</button>
+    </div>
+
+    <div class="card">
+      <label>Built-in misspelling fixes (used by "Correct common typos")</label>
+      <div id="builtin" style="max-height:260px;overflow:auto"></div>
+      <div id="builtinOff" class="hidden" style="margin-top:10px"><label>Removed</label><div id="builtinOffList"></div></div>
+    </div>
+
+    <div class="card">
+      <label>Template: <span id="tplName"></span></label>
+      <textarea id="tpl" spellcheck="false" style="min-height:260px"></textarea>
+      <div class="bar" style="margin:10px 0 0">
+        <button id="tplCopy" class="ghost small" type="button">Copy template</button>
+        <button id="tplUpload" class="ghost small" type="button">Replace from a file</button>
+        <input type="file" id="tplFile" accept=".html,.htm,.txt" class="hidden" />
+        <button id="tplTest" class="ghost small" type="button">Test in builder</button>
+        <button id="tplPublish" class="small" type="button">Publish template</button>
+        <button id="tplReset" class="ghost small" type="button">Reset</button>
+      </div>
+      <div id="tplStatus" style="margin-top:6px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <div class="card">
+      <label>Button and rule colors</label>
+      <div class="colors">
+        <div><span>Button</span><input type="color" id="c_btnBg" /></div>
+        <div><span>Button edge</span><input type="color" id="c_btnEdge" /></div>
+        <div><span>Button text</span><input type="color" id="c_btnText" /></div>
+        <div><span>Heading rule</span><input type="color" id="c_bar" /></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="card">
+      <label>Full config</label>
+      <textarea id="json" spellcheck="false"></textarea>
+      <div id="err"></div>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  var v = Date.now(), files = ['engine.js', 'admin.js'];
+  (function next(i) {
+    if (i >= files.length) return;
+    var s = document.createElement('script');
+    s.src = files[i] + '?v=' + v;
+    s.onload = function () { next(i + 1); };
+    document.head.appendChild(s);
+  })(0);
+})();
+</script>
+</body>
+</html>

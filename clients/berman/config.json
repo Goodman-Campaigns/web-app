@@ -1,0 +1,111 @@
+{
+  "id": "berman",
+  "name": "Mitchell Berman",
+  "platform": "sb",
+  "output": {
+    "mode": "document",
+    "template": "template.html"
+  },
+  "defaultPage": "https://secure.actblue.com/donate/mberman-email",
+  "merge": {
+    "firstName": "{{ sb_first_name or 'Friend' }}",
+    "firstNameSubject": "{{ sb_first_name or 'Friend' }}",
+    "ask": "{{ ask{n} }}"
+  },
+  "prevGiftField": "sb_max_amount_donated",
+  "asks": [
+    {
+      "mult": 1,
+      "min": 10,
+      "max": 50
+    },
+    {
+      "mult": 1.2,
+      "min": 25,
+      "max": 100
+    },
+    {
+      "mult": 1.5,
+      "min": 50,
+      "max": 250
+    },
+    {
+      "mult": 2,
+      "min": 100,
+      "max": 500
+    },
+    {
+      "mult": 3,
+      "min": 250,
+      "max": 1000
+    },
+    {
+      "mult": 5,
+      "min": 500,
+      "max": 2500
+    }
+  ],
+  "refcode": {
+    "mode": "append"
+  },
+  "tokens": {},
+  "typos": {
+    "Stiel": "Steil",
+    "tessst": "test",
+    "Brian": "Bryan"
+  },
+  "rules": [
+    "spaces",
+    "spaceBeforePunct",
+    "spaceAfterPeriod",
+    "spaceAfterComma",
+    "repeatedWord",
+    "typos",
+    "smartQuotes",
+    "ctaLink"
+  ],
+  "bodyFontSize": 18,
+  "imageWidth": 536,
+  "buttons": {
+    "single": "DONATE &rarr;",
+    "another": "ANOTHER AMOUNT &rarr;"
+  },
+  "expressDisclaimer": "If you have saved your information with ActBlue Express, your donation will process instantly.",
+  "toggles": [
+    {
+      "id": "logo",
+      "label": "Top logo",
+      "default": true
+    },
+    {
+      "id": "footerbox",
+      "label": "Footer box",
+      "default": true
+    }
+  ],
+  "style": {
+    "ink": "#1B2733",
+    "bar": "#1C3764",
+    "btnBg": "#1C3764",
+    "btnEdge": "#112C54",
+    "btnText": "#FFFFFF",
+    "ghostBg": "#FFFFFF",
+    "ghostBorder": "#1C3764",
+    "ghostText": "#1C3764",
+    "btnFont": "Arial,Helvetica,sans-serif",
+    "btnSize": 16,
+    "btnWeight": 700,
+    "letterSpacing": "0.6px",
+    "hiBg": "#F5A800",
+    "hiEdge": "#B87F00",
+    "hiText": "#1B2733",
+    "panel": "#EAF1F8"
+  },
+  "stack": {
+    "count": 4,
+    "columns": 1,
+    "highlight": 0
+  },
+  "snippets": {},
+  "plainFooter": "Mitchell Berman for Congress\nPO Box 44181\nRacine, WI 53404\n\nPaid for by Mitchell Berman for Congress\n\nMitchell Berman was an RN at the U.S. Department of Veterans Affairs. Use of job titles and photographs does not imply endorsement by the U.S. Department of Veterans Affairs.\n\nIf you believe you received this message in error or wish to no longer receive email from us, please click here: {{ sb_unsubscribe }}"
+}

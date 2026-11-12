@@ -1,0 +1,95 @@
+{
+  "id": "udp",
+  "name": "Utah Democratic Party",
+  "platform": "ngp",
+  "output": {
+    "mode": "body",
+    "theme": "theme.html"
+  },
+  "defaultPage": "https://secure.actblue.com/donate/udp-email",
+  "merge": {
+    "firstName": "{{FirstName or 'Friend'}}",
+    "firstNameSubject": "{{FirstName or 'Friend'}}",
+    "ask": "{{get('ask{n}')}}"
+  },
+  "asks": [
+    {
+      "mult": 1,
+      "min": 10,
+      "max": 50
+    },
+    {
+      "mult": 1.2,
+      "min": 25,
+      "max": 100
+    },
+    {
+      "mult": 1.5,
+      "min": 50,
+      "max": 250
+    },
+    {
+      "mult": 2,
+      "min": 100,
+      "max": 500
+    },
+    {
+      "mult": 3,
+      "min": 250,
+      "max": 1000
+    },
+    {
+      "mult": 5,
+      "min": 500,
+      "max": 2500
+    }
+  ],
+  "refcode": {
+    "mode": "strip"
+  },
+  "tokens": {},
+  "typos": {},
+  "rules": [
+    "spaces",
+    "spaceBeforePunct",
+    "spaceAfterPeriod",
+    "spaceAfterComma",
+    "repeatedWord",
+    "typos",
+    "smartQuotes",
+    "ctaLink"
+  ],
+  "bodyFontSize": 18,
+  "imageWidth": 536,
+  "buttons": {
+    "single": "DONATE &rarr;",
+    "another": "ANOTHER AMOUNT &rarr;"
+  },
+  "expressDisclaimer": "If you have saved your information with ActBlue Express, your donation will process instantly.",
+  "toggles": [],
+  "style": {
+    "ink": "#302925",
+    "bar": "#329599",
+    "panel": "#F3DFC4",
+    "btnBg": "#7FCFD2",
+    "btnEdge": "#4FA9AD",
+    "btnText": "#302925",
+    "ghostBg": "#FDF0E0",
+    "ghostBorder": "#302925",
+    "ghostText": "#302925",
+    "btnFont": "'Alfa Slab One','Arial Black','Helvetica Neue',Arial,sans-serif",
+    "btnSize": 16,
+    "btnWeight": 800,
+    "letterSpacing": "0.6px",
+    "bodyFont": "'Overpass',Arial,Helvetica,sans-serif",
+    "hiBg": "#D9A441",
+    "hiEdge": "#A87D1F",
+    "hiText": "#302925"
+  },
+  "stack": {
+    "count": 4,
+    "columns": 1,
+    "highlight": 0
+  },
+  "snippets": {}
+}

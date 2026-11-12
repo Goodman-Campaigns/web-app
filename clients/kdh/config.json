@@ -1,0 +1,94 @@
+{
+  "id": "kdh",
+  "name": "Kansas House Democrats",
+  "platform": "ngp",
+  "output": {
+    "mode": "body",
+    "theme": "theme.html"
+  },
+  "defaultPage": "https://secure.actblue.com/donate/kdh-email",
+  "merge": {
+    "firstName": "{{FirstName or 'Friend'}}",
+    "firstNameSubject": "{{FirstName or 'Friend'}}",
+    "ask": "{{get('ask{n}')}}"
+  },
+  "asks": [
+    {
+      "mult": 1,
+      "min": 10,
+      "max": 50
+    },
+    {
+      "mult": 1.2,
+      "min": 25,
+      "max": 100
+    },
+    {
+      "mult": 1.5,
+      "min": 50,
+      "max": 250
+    },
+    {
+      "mult": 2,
+      "min": 100,
+      "max": 500
+    },
+    {
+      "mult": 3,
+      "min": 250,
+      "max": 1000
+    },
+    {
+      "mult": 5,
+      "min": 500,
+      "max": 2500
+    }
+  ],
+  "refcode": {
+    "mode": "strip"
+  },
+  "tokens": {},
+  "typos": {},
+  "rules": [
+    "spaces",
+    "spaceBeforePunct",
+    "spaceAfterPeriod",
+    "spaceAfterComma",
+    "repeatedWord",
+    "typos",
+    "smartQuotes",
+    "ctaLink"
+  ],
+  "bodyFontSize": 18,
+  "imageWidth": 536,
+  "buttons": {
+    "single": "DONATE &rarr;",
+    "another": "ANOTHER AMOUNT &rarr;"
+  },
+  "expressDisclaimer": "If you have saved your information with ActBlue Express, your donation will process instantly.",
+  "toggles": [],
+  "style": {
+    "ink": "#1B2733",
+    "bar": "#0B6EAE",
+    "btnBg": "#0B6EAE",
+    "btnEdge": "#085587",
+    "btnText": "#FFFFFF",
+    "ghostBg": "#FFFFFF",
+    "ghostBorder": "#0B6EAE",
+    "ghostText": "#0B6EAE",
+    "btnFont": "Arial,Helvetica,sans-serif",
+    "btnSize": 16,
+    "btnWeight": 700,
+    "letterSpacing": "0.6px",
+    "hiBg": "#FFC200",
+    "hiEdge": "#C79200",
+    "hiText": "#1B2733",
+    "panel": "#EAF4FB"
+  },
+  "stack": {
+    "count": 4,
+    "columns": 1,
+    "highlight": 0
+  },
+  "snippets": {}
+}

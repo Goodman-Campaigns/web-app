@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Email Builder</title>
+<style>
+  :root {
+    --bg: #F5F7FA; --card: #FFFFFF; --ink: #1B2733; --muted: #5A6772; --line: #D9E0E8;
+    --accent: #1C3764; --accent-ink: #FFFFFF; --warn-bg: #FFF4E0; --warn-line: #E9B764; --ok-bg: #E8F3EC; --ok-line: #8CC4A0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F141A; --card: #171E26; --ink: #E8EDF1; --muted: #9AA7B3; --line: #2A3541;
+      --accent: #84B1D8; --accent-ink: #0F141A; --warn-bg: #2B2214; --warn-line: #7A5F2A; --ok-bg: #14261C; --ok-line: #2F6A45;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 Arial, Helvetica, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card); display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 18px; margin: 0; }
+  main { display: grid; grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.25fr); gap: 16px; padding: 16px 20px 40px; align-items: start; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 4px; }
+  select, input[type=text], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; }
+  textarea { font: 12px/1.4 Consolas, Menlo, monospace; min-height: 220px; resize: vertical; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .row > div { flex: 1 1 200px; }
+  .checks { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; }
+  .checks label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 400; }
+  #draft { min-height: 130px; max-height: 240px; overflow: auto; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); outline: none; font-size: 15px; }
+  #draft:empty:before { content: attr(data-placeholder); color: var(--muted); }
+  #draft:focus { border-color: var(--accent); }
+  .outrow { display: flex; gap: 8px; align-items: stretch; margin-bottom: 12px; }
+  .outrow input { flex: 1; }
+  button { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  button.ghost { background: transparent; color: var(--accent); }
+  .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  ul.list { margin: 0; padding-left: 18px; }
+  .note { border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+  .note.warn { background: var(--warn-bg); border: 1px solid var(--warn-line); }
+  .note.ok { background: var(--ok-bg); border: 1px solid var(--ok-line); }
+  .note b { display: block; margin-bottom: 4px; }
+  .note button { margin-top: 6px; }
+  .imgrow { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .imgrow:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+  .imgrow img { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); }
+  .btnrow { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .btnrow:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+  .btitle { font-weight: 700; margin-bottom: 8px; }
+  .btitle span { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .bfields { display: flex; flex-direction: column; gap: 6px; }
+  .bchecks { display: flex; gap: 18px; flex-wrap: wrap; }
+  .inl { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 14px; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 400; }
+  .row3 { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row3 > div { flex: 1 1 130px; }
+  .imgfields { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .linkrow { display: flex; gap: 6px; }
+  .linkrow input { flex: 1; }
+  button.small { padding: 4px 10px; font-size: 13px; }
+  .imgrow .ph { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--line); border-radius: 4px; font-size: 11px; color: var(--muted); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; color: var(--ink); font-weight: 400; padding: 5px 12px; }
+  .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  #frameWrap { background: #8A939C; border-radius: 6px; padding: 10px 0; display: flex; justify-content: center; }
+  iframe { border: 0; background: #fff; width: 100%; height: 720px; }
+  #frameWrap.phone iframe { width: 390px; }
+  #frameWrap.desktop iframe { width: 680px; max-width: 100%; }
+  details.card > summary { cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::before { content: ''; width: 0; height: 0; border-left: 7px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; transition: transform .15s; }
+  details.card[open] > summary::before { transform: rotate(90deg); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Email Builder</h1>
+  <span style="font-size:11px;color:var(--muted)">v11.11.l</span>
+  <a href="admin.html" id="adminLink" style="color:var(--accent);font-weight:700">Client settings</a>
+  <span id="localNote" class="hidden" style="font-size:13px;color:var(--muted)">Using test settings from this browser. <a href="#" id="localReset" style="color:var(--accent)">Reset</a></span>
+  <div style="flex:1"></div>
+  <div style="width:260px"><select id="client"></select></div>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <label>Draft</label>
+      <div id="draft" contenteditable="true" spellcheck="false" data-placeholder="Paste the draft here, from the subject line down to the sign-off."></div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div style="flex:2 1 280px"><label>ActBlue page</label><input type="text" id="page" /></div>
+        <div id="refWrap" style="flex:1 1 160px"><label>Refcode</label><input type="text" id="refcode" /></div>
+      </div>
+      <div class="checks" id="checks">
+        <label><input type="checkbox" id="fix" checked /> Fix with rules</label>
+        <label><input type="checkbox" id="recurring" /> Make in-line links recurring</label>
+      </div>
+    </div>
+    <div class="card hidden" id="imgCard">
+      <label>Images</label>
+      <div id="imgs"></div>
+    </div>
+    <details class="card hidden" id="btnCard">
+      <summary><span id="btnTitle">Buttons</span></summary>
+      <div id="btns" style="margin-top:12px"></div>
+    </details>
+  </section>
+  <section>
+    <div class="card">
+      <div id="meta" style="font-size:13px;color:var(--muted);margin-bottom:8px;min-height:0"></div>
+      <div id="senders"></div>
+      <div id="subjects"></div>
+      <div id="previews"></div>
+      <div class="head"><label id="htmlLabel">HTML</label><div style="display:flex;gap:8px"><button data-copy="plain" id="plainBtn" class="ghost hidden">Copy plain text</button><button data-copy="html">Copy HTML</button></div></div>
+      <textarea id="plain" class="hidden" readonly style="min-height:0;height:0"></textarea>
+      <textarea id="html" readonly></textarea>
+      <div style="margin-top:6px;color:var(--muted);font-size:12px" id="size"></div>
+    </div>
+    <div id="notes"></div>
+    <details class="card" id="previewCard">
+      <summary><span>Preview</span></summary>
+      <div class="head" style="margin:12px 0 10px;justify-content:flex-end">
+        <div style="display:flex;gap:8px"><div class="seg" id="modeSeg"><button data-m="light" class="on">Light</button><button data-m="dark">Dark</button></div><div class="seg" id="seg"><button data-w="desktop" class="on">Desktop</button><button data-w="phone">Phone</button></div></div>
+      </div>
+      <div id="frameWrap" class="desktop"><iframe id="frame" title="Preview"></iframe></div>
+    </details>
+  </section>
+</main>
+<script>
+(function () {
+  var v = Date.now(), files = ['engine.js', 'app.js'];
+  (function next(i) {
+    if (i >= files.length) return;
+    var s = document.createElement('script');
+    s.src = files[i] + '?v=' + v;
+    s.onload = function () { next(i + 1); };
+    document.head.appendChild(s);
+  })(0);
+})();
+</script>
+</body>
+</html>
