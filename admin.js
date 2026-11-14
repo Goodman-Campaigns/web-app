@@ -322,6 +322,7 @@ function bind() {
 
 async function load(i) {
   id = i;
+  const back = document.getElementById('back'); if (back) back.href = 'index.html?client=' + encodeURIComponent(i);
   const s = lsGet(key(i));
   cfg = s ? JSON.parse(s) : await published(i);
   fillForm();

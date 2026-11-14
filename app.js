@@ -287,15 +287,49 @@ async function copy(text, btn) {
   setTimeout(() => { btn.textContent = old; }, 1200);
 }
 
+const platLabel = p => (p === 'sb' ? 'Switchboard' : p === 'ngp' ? 'NGP' : p === 'mailchimp' ? 'Mailchimp' : p);
+function barColorOf(c) {
+  const hex = (c.style && c.style.bar) || '#1C3764';
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? '#1B2733' : '#FFFFFF';
+}
+function setBanner(c) {
+  const bar = $('clientBar');
+  bar.classList.remove('hidden');
+  bar.style.background = (c.style && c.style.bar) || '#1C3764';
+  bar.style.color = barColorOf(c);
+  $('cbName').textContent = c.name;
+  $('cbPlat').textContent = platLabel(c.platform);
+}
+function openPicker(ids) {
+  const list = $('pickerList');
+  list.innerHTML = '';
+  ids.forEach(id => {
+    const c = clients[id];
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pick';
+    b.style.borderLeftColor = (c.style && c.style.bar) || '#1C3764';
+    b.innerHTML = '<span></span><small></small>';
+    b.firstChild.textContent = c.name;
+    b.lastChild.textContent = platLabel(c.platform);
+    b.addEventListener('click', () => {
+      const sel = $('client');
+      sel.value = id; sel.dispatchEvent(new Event('change'));
+      $('picker').classList.add('hidden');
+    });
+    list.appendChild(b);
+  });
+  $('picker').classList.remove('hidden');
+  const first = list.querySelector('.pick'); if (first) first.focus();
+}
+
 async function init() {
   const ids = await (await fetch('clients/index.json', { cache: 'no-store' })).json();
   for (const id of ids) await loadClient(id);
   const sel = $('client');
   ids.forEach(id => { const o = document.createElement('option'); o.value = id; o.textContent = clients[id].name; sel.appendChild(o); });
-  const saved = (() => { try { return localStorage.getItem('eb_client'); } catch (e) { return null; } })();
-  sel.value = saved && clients[saved] ? saved : ids[0];
-  current = clients[sel.value];
-  renderClientControls();
+  sel.value = '';
+  current = null;
   if (ids.some(i => clients[i]._local)) {
     $('localNote').classList.remove('hidden');
     $('localReset').addEventListener('click', () => {
@@ -307,10 +341,14 @@ async function init() {
     current = clients[sel.value];
     try { localStorage.setItem('eb_client', sel.value); } catch (e) { /* ignore */ }
     pageDirty = false; footerOverride = false; resetImages(); $('imgs').innerHTML = '';
-    renderClientControls(); schedule();
+    renderClientControls(); setBanner(current); schedule();
   });
+  $('cbChange').addEventListener('click', () => openPicker(ids));
+  const wanted = new URLSearchParams(location.search).get('client');
+  if (wanted && clients[wanted]) { sel.value = wanted; sel.dispatchEvent(new Event('change')); $('picker').classList.add('hidden'); }
+  else openPicker(ids);
   $('page').addEventListener('input', () => {
-    footerOverride = false; pageDirty = $('page').value.trim() !== current.defaultPage; schedule(); });
+    footerOverride = false; pageDirty = !!current && $('page').value.trim() !== current.defaultPage; schedule(); });
   ['refcode', 'fix', 'recurring'].forEach(id => $(id).addEventListener('input', schedule));
   $('fix').addEventListener('change', schedule);
   $('recurring').addEventListener('change', schedule);
