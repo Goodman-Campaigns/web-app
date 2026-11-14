@@ -647,7 +647,7 @@ function build(client, root, opts) {
 
   /* header lines: send time, sender, subject, preview text */
   let subject = null, pt = null, sender = '', sendTime = '';
-  const META = /^(Send(?:\s*Date)?(?:\s*\/\s*Time)?|Sender(?:\s*Name)?|From|SL|Subject(?:\s*Line)?|PT|Pre-?header(?:\s*Text)?|Pre-?view(?:\s*Text)?)\s*[:\-–—]\s*(.*)$/i;
+  const META = /^(Send(?:\s*Date)?(?:\s*\/\s*Time)?|Sender(?:\s*Name)?|From|SLs?|Subject(?:\s*Lines?)?(?:\s*Options?)?|PTs?|Pre-?header(?:\s*Text)?s?|Pre-?view(?:\s*Text)?s?)(?:\s*\([^)]*\))?\s*[:\-\u2013\u2014\uFF1A]\s*(.*)$/i;
   const metaKind = label => (/^sender|^from/i.test(label) ? 'sender' : /^send/i.test(label) ? 'sendTime' : /^(sl|subject)/i.test(label) ? 'subject' : 'pt');
   const linesOf = b => {
     const lines = [''];
@@ -662,32 +662,64 @@ function build(client, root, opts) {
   const meta = { subject: [], pt: [], sender: '', sendTime: '' };
   let sawMeta = false;
   const itemText = li => li.textContent.replace(/[ ​-‍﻿]/g, ' ').replace(/\s+/g, ' ').trim();
+  const NUMBERED = /^(?:\d+[.)]|[-•*])\s+(.+)$/;
+  // One block of header lines. A label with nothing after its colon takes the lines under it:
+  // numbered or bulleted lines (several versions) or plain lines (one version).
+  const parseHeaderLines = ls => {
+    const out = [];
+    let pend = null, under = 0;
+    for (const l of ls) {
+      const m = l.match(META);
+      if (m) { const k = metaKind(m[1]), v = m[2].trim(); out.push({ k, v }); pend = v ? null : k; under = 0; continue; }
+      if (!pend) return null;
+      const nm = l.match(NUMBERED);
+      out.push({ k: pend, v: nm ? nm[1].trim() : l.trim() });
+      under++;
+    }
+    return { out, pend, under };
+  };
+  const STRONG = /^(Send(?:\s*Date)?|Sender|Subject)/i;
+  const headerAt = (() => {
+    for (let k = 0; k < Math.min(items.length, 6); k++) {
+      if (items[k].type !== 'p') continue;
+      const ls = linesOf(items[k]);
+      if (ls.length && STRONG.test(ls[0]) && parseHeaderLines(ls)) return k;
+    }
+    return -1;
+  })();
+  if (headerAt > 0) { items.splice(0, headerAt); st.note('Lines above the header were ignored', headerAt); }
   while (items.length && items[0].type === 'p') {
     const ls = linesOf(items[0]);
     if (!ls.length) break;
-    const ms = ls.map(l => l.match(META));
-    if (!ms.every(Boolean)) break;
+    const parsed = parseHeaderLines(ls);
+    if (!parsed) break;
     items.shift();
     sawMeta = true;
-    let pending = null;
-    ms.forEach(m => {
-      const k = metaKind(m[1]);
-      const v = m[2].trim();
-      pending = null;
+    parsed.out.forEach(({ k, v }) => {
       if (k === 'sender') { if (!meta.sender) meta.sender = v; }
       else if (k === 'sendTime') { if (!meta.sendTime) meta.sendTime = v; }
       else if (v) meta[k].push(v);
-      else pending = k;
     });
-    // "Subject Line:" followed by a list means several versions to test
+    const pending = parsed.pend;
     if (pending) {
+      let took = parsed.under;
+      // a list under the label, or numbered paragraphs, are several versions to test
       if (items.length && items[0].type === 'list') {
-        items.shift().items.forEach(li => { const t = itemText(li); if (t) meta[pending].push(t); });
+        items.shift().items.forEach(li => { const t = itemText(li); if (t) { meta[pending].push(t); took++; } });
       } else {
         while (items.length && items[0].type === 'p') {
-          const mm = plainOf(items[0]).match(/^\d+[.)]\s+(.+)$/);
+          const mm = plainOf(items[0]).match(NUMBERED);
           if (!mm) break;
           meta[pending].push(mm[1]);
+          took++;
+          items.shift();
+        }
+      }
+      // nothing under the label yet: the next paragraph is its text (a short plain line, or a few lines)
+      if (!took && items.length && items[0].type === 'p') {
+        const ls2 = linesOf(items[0]);
+        if (ls2.length && ls2.length <= 6 && ls2.every(l => l.length <= 160 && !META.test(l))) {
+          ls2.forEach(l => meta[pending].push(l));
           items.shift();
         }
       }
@@ -699,6 +731,7 @@ function build(client, root, opts) {
   } else if (items.length && items[0].type === 'p') {
     subjects = [plainOf(items.shift())];
   }
+  if (!sawMeta && blocks.slice(0, 8).some(b => b.type === 'p' && /^\s*subject\b/i.test(plainOf(b)))) st.warn('A subject line is in the paste but could not be read. Check that it starts with "Subject Line:".');
   if (!subjects.length) st.warn('No subject line found. Start the paste with the subject line, or a "Subject Line:" label.');
 
   const plainText = t => { st.last = ''; return applyTokens(fixText(t, st), st); };
