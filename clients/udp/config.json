@@ -55,6 +55,7 @@
     "spaceAfterPeriod",
     "spaceAfterComma",
     "repeatedWord",
+    "doublePeriods",
     "typos",
     "smartQuotes",
     "ctaLink"
