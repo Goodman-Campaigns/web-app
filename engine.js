@@ -107,6 +107,7 @@ const RULES = [
   { id: 'spaceAfterPeriod', label: 'Add a missing space after a period', example: 'today.Please becomes today. Please' },
   { id: 'spaceAfterComma', label: 'Add a missing space after a comma', example: 'Hello,friend becomes Hello, friend' },
   { id: 'repeatedWord', label: 'Remove a repeated word', example: 'the the becomes the' },
+  { id: 'doublePeriods', label: 'Fix double periods (three dots are left alone)', example: 'today.. becomes today.' },
   { id: 'typos', label: 'Correct common typos', example: 'recieve becomes receive' },
   { id: 'smartQuotes', label: 'Make curly quote marks straight', example: '“Hi” becomes "Hi"' },
   { id: 'ctaLink', label: 'Link the bold ask sentence above a button', example: 'bold sentence + [DONATE] makes the sentence a link' }
@@ -125,6 +126,10 @@ function fixPlain(t, st) {
   const note = (m, n) => st.note(m, n);
   if (on('spaces')) t = t.replace(/[ \t]{2,}/g, () => { note('Extra spaces removed'); return ' '; });
   if (on('spaceBeforePunct')) t = t.replace(/ +([,.!?;:])(?=\s|$)/g, (m, p) => { note('Space before punctuation removed'); return p; });
+  if (on('doublePeriods')) {
+    // exactly two periods become one; three or more (an ellipsis) and web addresses are left alone
+    t = t.split(/(https?:\/\/\S+|www\.\S+)/i).map((seg, i) => (i % 2 ? seg : seg.replace(/\.{2,}/g, m => { if (m.length !== 2) return m; note('Double period fixed'); return '.'; }))).join('');
+  }
   if (on('spaceAfterPeriod')) t = t.replace(/([a-z]{2,}[.!?])([A-Z][a-z])/g, (m, a, b) => { note('Missing space after period added'); return a + ' ' + b; });
   if (on('spaceAfterComma')) t = t.replace(/([a-z]),([A-Za-z])/g, (m, a, b) => { note('Missing space after comma added'); return a + ', ' + b; });
   if (on('repeatedWord')) {
