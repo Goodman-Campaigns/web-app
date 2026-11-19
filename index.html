@@ -19,8 +19,10 @@
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 Arial, Helvetica, sans-serif; }
   header { padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card); display: flex; align-items: center; gap: 16px; }
   header h1 { font-size: 18px; margin: 0; }
-  main { display: grid; grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.25fr); gap: 16px; padding: 16px 20px 40px; align-items: start; }
-  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "draft settings" "out preview"; gap: 16px; padding: 16px 20px 40px; align-items: start; }
+  .cell-draft { grid-area: draft; } .cell-settings { grid-area: settings; } .cell-out { grid-area: out; } .cell-preview { grid-area: preview; }
+  .cell-draft #draft { min-height: 220px; max-height: 360px; }
+  @media (max-width: 980px) { main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "draft" "settings" "out" "preview"; } }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
   label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 4px; }
   select, input[type=text], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; }
@@ -90,7 +92,7 @@
 <body>
 <header>
   <h1>Email Builder</h1>
-  <span style="font-size:11px;color:var(--muted)">v11.12.d</span>
+  <span style="font-size:11px;color:var(--muted)">v11.13.a</span>
   <a href="admin.html" id="adminLink" style="color:var(--accent);font-weight:700">Client settings</a>
   <span id="localNote" class="hidden" style="font-size:13px;color:var(--muted)">Using test settings from this browser. <a href="#" id="localReset" style="color:var(--accent)">Reset</a></span>
   <div style="flex:1"></div>
@@ -104,14 +106,16 @@
   <button type="button" id="cbChange">Change client</button>
 </div>
 <main>
-  <section>
+  <section class="cell-draft">
     <div class="card">
       <label>Draft</label>
       <div id="draft" contenteditable="true" spellcheck="false" data-placeholder="Paste the draft here, from the subject line down to the sign-off."></div>
     </div>
+  </section>
+  <section class="cell-settings">
     <div class="card">
       <div class="row">
-        <div style="flex:2 1 280px"><label>ActBlue page</label><input type="text" id="page" /></div>
+        <div style="flex:2 1 280px"><label>Link</label><input type="text" id="page" /></div>
         <div id="refWrap" style="flex:1 1 160px"><label>Refcode</label><input type="text" id="refcode" /></div>
       </div>
       <div class="checks" id="checks">
@@ -128,7 +132,8 @@
       <div id="btns" style="margin-top:12px"></div>
     </details>
   </section>
-  <section>
+  <section class="cell-out">
+    
     <div class="card">
       <div id="meta" style="font-size:13px;color:var(--muted);margin-bottom:8px;min-height:0"></div>
       <div id="senders"></div>
@@ -140,7 +145,9 @@
       <div style="margin-top:6px;color:var(--muted);font-size:12px" id="size"></div>
     </div>
     <div id="notes"></div>
-    <details class="card" id="previewCard">
+  </section>
+  <section class="cell-preview">
+    <details class="card" id="previewCard" open>
       <summary><span>Preview</span></summary>
       <div class="head" style="margin:12px 0 10px;justify-content:flex-end">
         <div style="display:flex;gap:8px"><div class="seg" id="modeSeg"><button data-m="light" class="on">Light</button><button data-m="dark">Dark</button></div><div class="seg" id="seg"><button data-w="desktop" class="on">Desktop</button><button data-w="phone">Phone</button></div></div>
