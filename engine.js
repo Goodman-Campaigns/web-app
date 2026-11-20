@@ -309,6 +309,7 @@ function inline(node, st, fmt) {
     let href = (node.getAttribute('href') || '').trim();
     href = unwrapGoogle(href);
     if (!href || href === '#' || /^(LINK|\[LINK\])$/i.test(href)) { href = st.page; st.note('Empty link pointed at the default page'); }
+    else (st.draftLinks = st.draftLinks || []).push(href);
     st.flags.link++;
     inner = '<a href="' + escAttr(href) + '">' + inner + '</a>';
   }
@@ -799,12 +800,19 @@ function build(client, root, opts) {
       continue;
     }
     if (t.length <= 40 && /\b(?:ABX|EXPRESS|EXPL)\b/i.test(t)) { autoLink(); parts.push({ s: expressStack(st) }); continue; }
-    if ((m = t.match(/^\[(?:DONATE|BUTTON|LINK)(?::\s*(.+?))?\]$/i)) || /^LINK$/.test(t)) {
+    if ((m = t.match(/^\[(?:DONATE|BUTTON|LINK)(?:\s*[:\-\u2013\u2014]\s*(.+?))?\]$/i)) || /^LINK$/.test(t)) {
       autoLink();
-      const given = m && m[1] ? m[1].trim() : null;
+      let given = m && m[1] ? m[1].trim() : null;
+      if (given && /^(?:BUTTON|DONATE|LINK)(?:\s*(?:&rarr;|\u2192))?$/i.test(given)) given = null;
       const amt = given ? buttonAmount(given, st) : null;
       if (amt) st.warn('Set amount=' + amt + ' on the button [' + given + ']');
-      parts.push({ s: makeSingle(st, { label: given || String(client.buttons.single || 'DONATE').replace(/\s*&rarr;\s*$/i, ''), link: pageWith(st, ''), amount: amt }) });
+      let bhref = pageWith(st, '');
+      const ael = (b.nodes || []).map(n => (n.nodeType === 1 ? (n.tagName === 'A' ? n : n.querySelector && n.querySelector('a')) : null)).find(Boolean);
+      if (ael) {
+        const hv = unwrapGoogle((ael.getAttribute('href') || '').trim());
+        if (/^https?:\/\//i.test(hv)) { bhref = hv; (st.draftLinks = st.draftLinks || []).push(hv); }
+      }
+      parts.push({ s: makeSingle(st, { label: given || String(client.buttons.single || 'DONATE').replace(/\s*&rarr;\s*$/i, ''), link: bhref, amount: amt }) });
       st.note('Donate button inserted');
       continue;
     }
@@ -873,6 +881,24 @@ function build(client, root, opts) {
     pushPara(rec);
     bodyPlain.push(rec.plain);
   }
+  const detectedLink = (() => {
+    const hostOf = u => ((String(u).match(/^https?:\/\/([^\/?#]+)/i) || [])[1] || '').toLowerCase();
+    const noQ = u => String(u).split('#')[0].split('?')[0].replace(/\/+$/, '').toLowerCase();
+    const defHost = hostOf(client.defaultPage || '');
+    const counts = new Map();
+    (st.draftLinks || []).forEach(u => {
+      u = String(u).replace(/&amp;/g, '&');
+      const hst = hostOf(u);
+      if (!hst || /unsubscribe|optout|opt-out/i.test(u)) return;
+      if (!(hst === defHost || /actblue|countonme|secure\./i.test(hst))) return;
+      if (noQ(u) === noQ(client.defaultPage || '')) return;
+      u = u.replace(/([?&])refcode2?=[^&#]*&?/gi, '$1').replace(/[?&]$/, '');
+      counts.set(u, (counts.get(u) || 0) + 1);
+    });
+    let best = '', n = 0;
+    counts.forEach((c, u) => { if (c > n) { best = u; n = c; } });
+    return best;
+  })();
   let body = parts.map(p => p.s).join('').replace(/\n{3,}/g, '\n\n').trim() + '\n';
   body = inferAmounts(body, st);
   if (opts.recurring) body = makeRecurring(body, st);
@@ -961,7 +987,7 @@ function build(client, root, opts) {
   if (/PASTE-IMAGE-URL-HERE/.test(final)) { /* warned above */ }
 
   return {
-    subject, preheader: pt, subjects, previews, sender, sendTime, plainText: plainOut, footer, buttons: st.buttons, amountLinks: st.amountLinks, html: final, bodyHtml: imgSrc(body, 'out'),
+    detectedLink, subject, preheader: pt, subjects, previews, sender, sendTime, plainText: plainOut, footer, buttons: st.buttons, amountLinks: st.amountLinks, html: final, bodyHtml: imgSrc(body, 'out'),
     previewSource: previewHtml, bodyMode, images: st.images, bytes,
     changes: Array.from(st.changes.entries()).map(([k, v]) => (v > 1 ? k + ' (' + v + ')' : k)),
     warnings: st.warnings

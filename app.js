@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const clients = {};
 let current = null;
-let pageDirty = false;
+let pageTyped = false, pageAuto = false, pageDirty = false;
 const imageUrls = [];
 const imageAlts = [];
 const imageLinks = [];
@@ -73,6 +73,18 @@ function run() {
   } catch (e) {
     console.error(e);
     $('notes').innerHTML = '<div class="note warn"><b>Something went wrong</b>' + String(e.message || e) + '</div>';
+    return;
+  }
+  // the draft links to a specific donate page: put it in the Link box and build again with it
+  const found = result.detectedLink || '';
+  if (!pageTyped && found && $('page').value.trim() !== found) {
+    $('page').value = found; pageDirty = true; pageAuto = true; footerOverride = false;
+    run();
+    return;
+  }
+  if (!pageTyped && pageAuto && !found) {
+    pageAuto = false; pageDirty = false; $('page').value = current.defaultPage; footerOverride = false;
+    run();
     return;
   }
   last = result;
@@ -340,7 +352,7 @@ async function init() {
   sel.addEventListener('change', () => {
     current = clients[sel.value];
     try { localStorage.setItem('eb_client', sel.value); } catch (e) { /* ignore */ }
-    pageDirty = false; footerOverride = false; resetImages(); $('imgs').innerHTML = '';
+    pageDirty = false; pageTyped = false; footerOverride = false; resetImages(); $('imgs').innerHTML = '';
     renderClientControls(); setBanner(current); schedule();
   });
   $('cbChange').addEventListener('click', () => openPicker(ids));
@@ -348,12 +360,12 @@ async function init() {
   if (wanted && clients[wanted]) { sel.value = wanted; sel.dispatchEvent(new Event('change')); $('picker').classList.add('hidden'); }
   else openPicker(ids);
   $('page').addEventListener('input', () => {
-    footerOverride = false; pageDirty = !!current && $('page').value.trim() !== current.defaultPage; schedule(); });
+    pageTyped = true; pageAuto = false; footerOverride = false; pageDirty = !!current && $('page').value.trim() !== current.defaultPage; schedule(); });
   ['refcode', 'fix', 'recurring'].forEach(id => $(id).addEventListener('input', schedule));
   $('fix').addEventListener('change', schedule);
   $('recurring').addEventListener('change', schedule);
   $('draft').addEventListener('input', () => { $('imgs').innerHTML = ''; schedule(); });
-  $('draft').addEventListener('paste', () => { resetImages(); $('imgs').innerHTML = ''; setTimeout(schedule, 50); });
+  $('draft').addEventListener('paste', () => { pageTyped = false; resetImages(); $('imgs').innerHTML = ''; setTimeout(schedule, 50); });
   document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => copy($(b.dataset.copy).value, b)));
   document.querySelectorAll('#seg button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('#seg button').forEach(x => x.classList.toggle('on', x === b));
