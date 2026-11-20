@@ -22,3 +22,6 @@ The admin page saves changes as commits to `Goodman-Campaigns/web-app` (branch `
 
 ## Notes
 No credentials or build tooling. Original repo: JacobGC22/email-builder (this is a clean export of the current commit, without git history).
+
+## Change log
+See [CHANGELOG.md](CHANGELOG.md) for a dated, newest-first record of changes. Add an entry with every push.
