@@ -173,7 +173,7 @@ function renderImages(r) {
       + '<input type="text" data-f="url" placeholder="Hosted image URL" value="' + val(imageUrls[i] || im.url) + '" />'
       + '<input type="text" data-f="alt" placeholder="Alt text" value="' + val(imageAlts[i] != null ? imageAlts[i] : im.docAlt) + '" />'
       + '<div class="linkrow"><input type="text" data-f="link" placeholder="Image links to (optional)" value="' + val(imageLinks[i] != null ? imageLinks[i] : im.docLink) + '" />'
-      + '<button type="button" class="ghost small">Insert page link</button></div>'
+      + '<button type="button" class="ghost small">Match Above Link</button></div>'
       + '</div>';
     const f = n => row.querySelector('[data-f=' + n + ']');
     f('url').addEventListener('input', e => { imageUrls[i] = e.target.value.trim(); schedule(); });
@@ -202,7 +202,7 @@ function buildButtonRow(b, i, n) {
     row.innerHTML = '<div class="btitle">Button ' + n + ' <span>' + esc(b.title) + '</span></div>'
       + '<div class="bfields">'
       + '<input type="text" data-k="label" placeholder="Button text" />'
-      + '<div class="linkrow"><input type="text" data-k="link" placeholder="Button links to" /><button type="button" class="ghost small" data-act="page">Insert page link</button></div>'
+      + '<div class="linkrow"><input type="text" data-k="link" placeholder="Button links to" /><button type="button" class="ghost small" data-act="page">Match Above Link</button></div>'
       + '<input type="text" data-k="amount" placeholder="Amount (none)" />'
       + '<div class="bchecks">' + checks + '</div></div>';
   } else {
