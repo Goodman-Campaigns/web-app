@@ -649,6 +649,12 @@ function build(client, root, opts) {
   const S = st.style;
   const blocks = [];
   walk(root, blocks);
+  // remember which paragraphs follow a blank line, so an empty header label is not given the text after a gap
+  let sawGap = false;
+  blocks.forEach(b => {
+    if (b.type === 'p' && plainOf(b) === '' && !hasImg(b)) { sawGap = true; return; }
+    b.gap = sawGap; sawGap = false;
+  });
   let items = blocks.filter(b => b.type !== 'p' || plainOf(b) !== '' || hasImg(b));
 
   /* header lines: send time, sender, subject, preview text */
@@ -722,8 +728,8 @@ function build(client, root, opts) {
         }
       }
       // nothing under the label yet: the next paragraph is its text (a short plain line, or a few lines)
-      // (only when the label stands alone: a label ending a longer header block with nothing after it is left empty)
-      if (!took && ls.length === 1 && items.length && items[0].type === 'p') {
+      // (only when no blank line separates it from the label; with a gap the label stays empty and the paragraph is body)
+      if (!took && items.length && items[0].type === 'p' && !items[0].gap) {
         const ls2 = linesOf(items[0]);
         if (ls2.length && ls2.length <= 6 && ls2.every(l => l.length <= 160 && !META.test(l))) {
           ls2.forEach(l => meta[pending].push(l));
