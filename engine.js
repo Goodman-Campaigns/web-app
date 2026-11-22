@@ -722,7 +722,8 @@ function build(client, root, opts) {
         }
       }
       // nothing under the label yet: the next paragraph is its text (a short plain line, or a few lines)
-      if (!took && items.length && items[0].type === 'p') {
+      // (only when the label stands alone: a label ending a longer header block with nothing after it is left empty)
+      if (!took && ls.length === 1 && items.length && items[0].type === 'p') {
         const ls2 = linesOf(items[0]);
         if (ls2.length && ls2.length <= 6 && ls2.every(l => l.length <= 160 && !META.test(l))) {
           ls2.forEach(l => meta[pending].push(l));
