@@ -2,6 +2,8 @@
 
 Static web app (no build step) that assembles client email HTML from per-client themes.
 
+Live at https://loademail.goodmancampaigns.com (GitHub Pages from `main`; the `CNAME` file holds the domain, DNS is a CNAME for `loademail` pointing to `goodman-campaigns.github.io` at Squarespace Domains).
+
 ## What's here
 - `index.html`, `app.js` - the builder UI.
 - `engine.js` - template/theme rendering engine.
