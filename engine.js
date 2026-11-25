@@ -185,6 +185,12 @@ const alignOf = el => {
   const s = (el.getAttribute && (el.getAttribute('style') || '')) || '';
   return /text-align:\s*center/i.test(s) || (el.getAttribute && el.getAttribute('align') === 'center') ? 'center' : null;
 };
+const marginOf = (el, side) => {
+  const v = (el.style && el.style[side]) || '';
+  if (!v) return null;
+  const m = String(v).trim().match(/^(-?[\d.]+)\s*(?:pt|px|em|rem)?$/i);
+  return m ? parseFloat(m[1]) : null;
+};
 function walk(el, blocks) {
   let buf = [];
   const flush = () => { if (buf.length) { blocks.push({ type: 'p', nodes: buf, align: null }); buf = []; } };
@@ -197,7 +203,7 @@ function walk(el, blocks) {
     if (tag === 'table') { flush(); blocks.push({ type: 'table' }); continue; }
     if (tag === 'hr') { flush(); continue; }
     if (/^h[1-6]$/.test(tag)) { flush(); blocks.push({ type: 'heading', nodes: Array.from(n.childNodes) }); continue; }
-    if (tag === 'p' || tag === 'blockquote') { flush(); blocks.push({ type: 'p', nodes: Array.from(n.childNodes), align: alignOf(n) }); continue; }
+    if (tag === 'p' || tag === 'blockquote') { flush(); blocks.push({ type: 'p', nodes: Array.from(n.childNodes), align: alignOf(n), mt: marginOf(n, 'marginTop'), mb: marginOf(n, 'marginBottom') }); continue; }
     if (['div', 'section', 'article', 'center', 'body', 'b', 'strong', 'span', 'font'].includes(tag)) {
       if (n.querySelector('p,div,h1,h2,h3,h4,h5,h6,ul,ol,table,li')) { flush(); walk(n, blocks); }
       else if (tag === 'div' || tag === 'center') { flush(); blocks.push({ type: 'p', nodes: Array.from(n.childNodes), align: alignOf(n) || (tag === 'center' ? 'center' : null) }); }
@@ -757,9 +763,26 @@ function build(client, root, opts) {
   /* body */
   const parts = [];
   const fs = client.bodyFontSize || 18;
-  const pushPara = rec => {
+  const paraStr = rec => {
     const style = rec.align === 'center' ? ' style="text-align:center;"' : '';
-    parts.push({ rec, s: '<p' + style + '><span style="font-size:' + fs + 'px;">' + rec.html + '</span></p>\n\n' });
+    return '<p' + style + '><span style="font-size:' + fs + 'px;">' + rec.html + '</span></p>\n\n';
+  };
+  const pushPara = (rec, b) => {
+    const prev = parts[parts.length - 1];
+    // lines that sit tight together in the draft (no space between, no blank line) stay one block, like a signature
+    if (prev && prev.rec && prev.mb === 0 && b && b.mt === 0 && !b.gap && prev.rec.align === rec.align) {
+      prev.rec.html += '<br />\n' + rec.html;
+      prev.rec.plain += '\n' + rec.plain;
+      prev.rec.allBold = prev.rec.allBold && rec.allBold;
+      prev.rec.hasLink = prev.rec.hasLink || rec.hasLink;
+      prev.mb = b.mb;
+      prev.s = paraStr(prev.rec);
+      if (bodyPlain.length) bodyPlain[bodyPlain.length - 1] += '\n' + rec.plain;
+      st.note('Lines that were tight together in the draft were kept together');
+      return;
+    }
+    parts.push({ rec, mb: b ? b.mb : null, s: paraStr(rec) });
+    bodyPlain.push(rec.plain);
   };
   const autoLink = () => {
     if (!st.rules.has('ctaLink')) return;
@@ -885,8 +908,7 @@ function build(client, root, opts) {
     }
     if (!rec.html.trim()) continue;
     rec.html = rec.html.replace(/IMG(\d+)/g, (x, n) => inlineImg(st, +n));
-    pushPara(rec);
-    bodyPlain.push(rec.plain);
+    pushPara(rec, b);
   }
   const detectedLink = (() => {
     const hostOf = u => ((String(u).match(/^https?:\/\/([^\/?#]+)/i) || [])[1] || '').toLowerCase();
